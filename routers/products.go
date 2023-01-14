@@ -14,6 +14,10 @@ func SetupProductRoutes(app *fiber.App) {
 		})
 	})
 
-	todos := app.Group("/products")
-	todos.Get("/", handlers.GetAllProductsHandler)
+	products := app.Group("/products")
+	products.Get("/", handlers.GetAllProductsHandler)
+	products.Get("/:id", handlers.GetSingleProductHandler)
+	products.Delete("/:id", handlers.DeleteProductHandler)
+	products.Put("/:id", handlers.UpdateProductHandler)
+
 }
