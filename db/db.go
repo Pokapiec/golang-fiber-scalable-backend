@@ -7,13 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetDb() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	return db, err
+var DB *gorm.DB
+
+func GetDb() error {
+	var err error
+	DB, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	return err
+}
+
+func MigrateAll() error {
+	err := GetDb()
+	if err != nil {
+		return err
+	}
+	DB.AutoMigrate(&entities.Product{})
+	return nil
 }
 
 func InitialCreate() {
-	db, _ := GetDb()
 	products := []*entities.Product{
 		{Code: "D42", Price: 100},
 		{Code: "D43", Price: 20},
@@ -23,11 +34,6 @@ func InitialCreate() {
 		{Code: "D4535", Price: 2121},
 	}
 	for _, product := range products {
-		db.Save(product)
+		DB.Save(product)
 	}
-}
-
-func MigrateAll() {
-	db, _ := GetDb()
-	db.AutoMigrate(&entities.Product{})
 }

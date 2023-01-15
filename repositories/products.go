@@ -11,36 +11,31 @@ type ProductDTO struct {
 	Price uint   `json:"price"`
 }
 
-func GetAllProducts() []ProductDTO {
-	dbClient, _ := db.GetDb()
+func GetAllProducts() ([]ProductDTO, error) {
 	var products []ProductDTO
-	dbClient.Model(&entities.Product{}).Select("code", "price", "id").Find(&products)
-	return products
+	result := db.DB.Model(&entities.Product{}).Find(&products)
+	return products, result.Error
 }
 
 func GetSingleProduct(productId int) (ProductDTO, error) {
-	dbClient, _ := db.GetDb()
 	var product ProductDTO
-	err := dbClient.Model(&entities.Product{}).Where("id = ?", productId).First(&product).Error
-	return product, err
+	result := db.DB.Model(entities.Product{}).First(&product, "id = ?", productId)
+	return product, result.Error
 }
 
 func DeleteProduct(productId int) error {
-	dbClient, _ := db.GetDb()
-	err := dbClient.Delete(&entities.Product{}, productId).Error
-	return err
+	result := db.DB.Delete(&entities.Product{}, productId)
+	return result.Error
 }
 
-func UpdateProduct(productId int, updateValues interface{}) (entities.Product, error) {
-	dbClient, _ := db.GetDb()
+func UpdateProduct(productId int, updateValues ProductDTO) (entities.Product, error) {
 	var product entities.Product
-	err := dbClient.Model(&product).Updates(updateValues).Error
-	return product, err
+	updateData := entities.Product{Code: updateValues.Code, Price: updateValues.Price}
+	result := db.DB.Model(&product).Where("id = ?", productId).Updates(updateData)
+	return product, result.Error
 }
 
-func CreateProduct(updateValues interface{}) (entities.Product, error) {
-	dbClient, _ := db.GetDb()
-	var product entities.Product
-	err := dbClient.Model(&product).Create(updateValues).Error
-	return product, err
+func CreateProduct(updateValues entities.Product) (entities.Product, error) {
+	err := db.DB.Create(&updateValues).Error
+	return updateValues, err
 }
